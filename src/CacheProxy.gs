@@ -71,16 +71,23 @@ CacheProxy.prototype.putAll = function(object){
   return this;
 }
 
-
 /**  
 *   Get a array of values from the CacheProxy
 *   @param {Array<string>} keys An Array of Strings
 *   @return {Object<string,string>} An object containing Key Value pairs
 */
 CacheProxy.prototype.getAll = function(keys){
-  var newObj = {};
+  var newObj = {};  
   for(var k in keys){
     newObj[keys[k]] = this.get(keys[k])
   }
   return newObj;
+}
+
+/**  
+*   Get a array of Keys from the CacheProxy
+*   @return {Array<string>} An array containing Keys
+*/
+CacheProxy.prototype.getKeys = function(){
+   return this.propertyService_.getKeys()
 }
