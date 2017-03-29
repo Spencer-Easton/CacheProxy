@@ -73,13 +73,32 @@ CacheProxy.prototype.putAll = function(object){
 
 /**  
 *   Get a array of values from the CacheProxy
-*   @param {Array<string>} keys An Array of Strings
+*   @param {Array<string>} keys An Array of Strings, if null gets all properties in CacheProxy
 *   @return {Object<string,string>} An object containing Key Value pairs
 */
 CacheProxy.prototype.getAll = function(keys){
+  if(!keys){
+   keys = this.getKeys();
+  }
   var newObj = {};  
   for(var k in keys){
     newObj[keys[k]] = this.get(keys[k])
+  }
+  return newObj;
+}
+
+/**  
+*   Delete all values from the CacheProxy
+*   @param {Array<string>} keys An Array of Strings, if null deletes all properties in CacheProxy
+*   @return {Object} CacheProxy for chaining
+*/
+CacheProxy.prototype.removeAll = function(keys){
+  if(!keys){
+   keys = this.getKeys();
+  }
+  var newObj = {};  
+  for(var k in keys){
+    this.remove(keys[k])
   }
   return newObj;
 }
