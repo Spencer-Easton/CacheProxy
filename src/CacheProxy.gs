@@ -29,7 +29,7 @@ var CacheProxy = function(cacheService,propertyService){
 */
 CacheProxy.prototype.put = function(key,val){
   this.cacheService_.put(key,val,21600); 
-  this.propertyService_.setProperty(key,val);
+  this.propertyService_.setProperty(key,JSON.stringify(val));
   return this;
 };
 
@@ -41,7 +41,7 @@ CacheProxy.prototype.put = function(key,val){
 CacheProxy.prototype.get = function(key){
   var val = this.cacheService_.get(key);
   if(!val){
-    val = this.propertyService_.getProperty(key);
+    val = JSON.parse(this.propertyService_.getProperty(key));
     if (val){
       this.cacheService_.put(key,val,21600);
     }
