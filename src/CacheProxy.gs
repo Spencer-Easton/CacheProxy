@@ -41,7 +41,10 @@ CacheProxy.prototype.put = function(key,val){
 CacheProxy.prototype.get = function(key){
   var val = this.cacheService_.get(key);
   if(!val){
-    val = JSON.parse(this.propertyService_.getProperty(key));
+    val = this.propertyService_.getProperty(key);
+    try {
+      val = JSON.parse(val)
+    } catch (e) {}
     if (val){
       this.cacheService_.put(key,val,21600);
     }
