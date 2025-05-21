@@ -10,106 +10,112 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 /**
   * A Cache/Propertyservice Proxy
-  * @constructor
-  * @param {Object} cacheService The Cache Service to use
-  * @param {Object} propertyService The Properties Service to use
-  * @return {Object} CacheProxy object
   */
-var CacheProxy = function(cacheService,propertyService){
-  this.cacheService_ = cacheService;
-  this.propertyService_ = propertyService;
-};
+class CacheProxy {
+  /**
+   * @param {Object} cacheService The Cache Service to use
+   * @param {Object} propertyService The Properties Service to use
+   */
+  constructor(cacheService, propertyService) {
+    this.cacheService_ = cacheService;
+    this.propertyService_ = propertyService;
+  }
 
+  /**  
+  *   Puts a Key,Val pair in the CacheProxy
+  *   @param {string} key Key
+  *   @param {string} val Value
+  *   @return {CacheProxy} This CacheProxy instance for chaining.
+  */
+  put(key, val) {
+    this.cacheService_.put(key, val, 21600);
+    this.propertyService_.setProperty(key, JSON.stringify(val));
+    return this;
+  }
 
-/**  
-*   Puts a Key,Val pair in the CacheProxy
-*   @param {string} key Key
-*   @param {string} val Value
-*   @return {Object} CacheProxy object for chaining
-*/
-CacheProxy.prototype.put = function(key,val){
-  this.cacheService_.put(key,val,21600); 
-  this.propertyService_.setProperty(key,JSON.stringify(val));
-  return this;
-};
-
-/**  
-*   Get a value from the CacheProxy
-*   @param {string} key Key
-*   @return {string} value found in the cache
-*/
-CacheProxy.prototype.get = function(key){
-  var val = this.cacheService_.get(key);
-  if(!val){
-    val = this.propertyService_.getProperty(key);
-    try {
-      val = JSON.parse(val)
-    } catch (e) {}
-    if (val){
-      this.cacheService_.put(key,val,21600);
+  /**  
+  *   Get a value from the CacheProxy
+  *   @param {string} key Key
+  *   @return {string} value found in the cache
+  */
+  get(key) {
+    let val = this.cacheService_.get(key);
+    if (!val) {
+      val = this.propertyService_.getProperty(key);
+      try {
+        val = JSON.parse(val)
+      } catch (e) { }
+      if (val) {
+        this.cacheService_.put(key, val, 21600);
+      }
     }
+    return val;
   }
-  return val;
-}
 
-/**  
-*   Remove a Key in the CacheProxy
-*   @param {string} key Key
-*   @return {Object} CacheProxy object for chaining
-*/
-CacheProxy.prototype.remove = function(key){
-  this.cacheService_.remove(key);
-  this.propertyService_.deleteProperty(key);
-  return this;
-}
-
-/**  
-*   Adds an object into the CacheProxy
-*   @param {Object<string,string>} object An object with native key value pairs
-*   @return {Object} CacheProxy object for chaining
-*/
-CacheProxy.prototype.putAll = function(object){  
-  this.propertyService_.setProperties(object)
-  this.cacheService_.putAll(object,21600);
-  return this;
-}
-
-/**  
-*   Get a array of values from the CacheProxy
-*   @param {Array<string>} keys An Array of Strings, if null gets all properties in CacheProxy
-*   @return {Object<string,string>} An object containing Key Value pairs
-*/
-CacheProxy.prototype.getAll = function(keys){
-  if(!keys){
-   keys = this.getKeys();
+  /**  
+  *   Remove a Key in the CacheProxy
+  *   @param {string} key Key
+  *   @return {CacheProxy} This CacheProxy instance for chaining.
+  */
+  remove(key) {
+    this.cacheService_.remove(key);
+    this.propertyService_.deleteProperty(key);
+    return this;
   }
-  var newObj = {};  
-  for(var k in keys){
-    newObj[keys[k]] = this.get(keys[k])
-  }
-  return newObj;
-}
 
-/**  
-*   Delete all values from the CacheProxy
-*   @param {Array<string>} keys An Array of Strings, if null deletes all properties in CacheProxy
-*   @return {Object} CacheProxy for chaining
-*/
-CacheProxy.prototype.removeAll = function(keys){
-  if(!keys){
-   keys = this.getKeys();
+  /**  
+  *   Adds an object into the CacheProxy
+  *   @param {Object<string,string>} object An object with native key value pairs
+  *   @return {CacheProxy} This CacheProxy instance for chaining.
+  */
+  putAll(object) {
+    const stringifiedObject = {};
+    for (const key in object) {
+      if (object.hasOwnProperty(key)) {
+        stringifiedObject[key] = JSON.stringify(object[key]);
+      }
+    }
+    this.propertyService_.setProperties(stringifiedObject);
+    this.cacheService_.putAll(stringifiedObject, 21600);
+    return this;
   }
-  var newObj = {};  
-  for(var k in keys){
-    this.remove(keys[k])
-  }
-  return newObj;
-}
 
-/**  
-*   Get a array of Keys from the CacheProxy
-*   @return {Array<string>} An array containing Keys
-*/
-CacheProxy.prototype.getKeys = function(){
-   return this.propertyService_.getKeys()
+  /**  
+  *   Get a array of values from the CacheProxy
+  *   @param {Array<string>} keys An Array of Strings, if null gets all properties in CacheProxy
+  *   @return {Object<string,string>} An object containing Key Value pairs
+  */
+  getAll(keys) {
+    if (!keys) {
+      keys = this.getKeys();
+    }
+    const newObj = {};
+    for (const key of keys) {
+      newObj[key] = this.get(key);
+    }
+    return newObj;
+  }
+
+  /**  
+  *   Delete all values from the CacheProxy
+  *   @param {Array<string>} keys An Array of Strings, if null deletes all properties in CacheProxy
+  *   @return {CacheProxy} This CacheProxy instance for chaining.
+  */
+  removeAll(keys) {
+    if (!keys) {
+      keys = this.getKeys();
+    }
+    for (const key of keys) {
+      this.remove(key);
+    }
+    return this;
+  }
+
+  /**  
+  *   Get a array of Keys from the CacheProxy
+  *   @return {Array<string>} An array containing Keys
+  */
+  getKeys() {
+    return this.propertyService_.getKeys()
+  }
 }
